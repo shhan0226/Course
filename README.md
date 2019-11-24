@@ -15,7 +15,7 @@
 * C언어 사용
 * Homework 
 
-### PL(programming language)
+### PL(Programming Language)
 프로그래밍 언어 수업에서 사용한 소스 정리<br>
 * C언어 사용
 * Homework 
