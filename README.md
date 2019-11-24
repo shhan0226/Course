@@ -1,7 +1,7 @@
 # Course
 
 ## Introduction
-대학원과정에서 사용한 소스 정리
+대학/대학원 과정에서 사용한 소스 정리
 
 ## Master Course
 
