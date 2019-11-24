@@ -1,0 +1,26 @@
+#!/bin/csh
+
+set values = (4 2 7 9 6 5 8 3)
+echo $values
+
+@ i = 1
+
+
+set min = $values[1]
+while ($i < $#values)
+	if($values[$i] < $min) then
+		set min = $values[$i]
+	endif
+	@ i ++
+
+end 
+echo $min
+
+set max = $values[1]
+@ i = 2
+foreach x ($values[$i-])
+	if ( $x > $max) then
+		set max = $x
+	endif
+end
+echo $max

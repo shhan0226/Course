@@ -1,0 +1,764 @@
+%!PS-Adobe-3.0
+%%BoundingBox: 38 24 574 768
+%%Title: Enscript Output
+%%For: 한석현
+%%Creator: GNU enscript 1.6.4
+%%CreationDate: Sun Apr 20 23:14:17 2014
+%%Orientation: Landscape
+%%Pages: (atend)
+%%DocumentMedia: Letter 612 792 0 () ()
+%%DocumentNeededResources: (atend)
+%%EndComments
+%%BeginProlog
+%%BeginResource: procset Enscript-Prolog 1.6 4
+%
+% Procedures.
+%
+
+/_S {	% save current state
+  /_s save def
+} def
+/_R {	% restore from saved state
+  _s restore
+} def
+
+/S {	% showpage protecting gstate
+  gsave
+  showpage
+  grestore
+} bind def
+
+/MF {	% fontname newfontname -> -	make a new encoded font
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  % insert only valid encoding vectors
+  encoding_vector length 256 eq {
+    newfont /Encoding encoding_vector put
+  } if
+
+  newfontname newfont definefont pop
+} def
+
+/MF_PS { % fontname newfontname -> -	make a new font preserving its enc
+  /newfontname exch def
+  /fontname exch def
+
+  /fontdict fontname findfont def
+  /newfont fontdict maxlength dict def
+
+  fontdict {
+    exch
+    dup /FID eq {
+      % skip FID pair
+      pop pop
+    } {
+      % copy to the new font dictionary
+      exch newfont 3 1 roll put
+    } ifelse
+  } forall
+
+  newfont /FontName newfontname put
+
+  newfontname newfont definefont pop
+} def
+
+/SF { % fontname width height -> -	set a new font
+  /height exch def
+  /width exch def
+
+  findfont
+  [width 0 0 height 0 0] makefont setfont
+} def
+
+/SUF { % fontname width height -> -	set a new user font
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF
+  /F-gs-user-font width height SF
+} def
+
+/SUF_PS { % fontname width height -> -	set a new user font preserving its enc
+  /height exch def
+  /width exch def
+
+  /F-gs-user-font MF_PS
+  /F-gs-user-font width height SF
+} def
+
+/M {moveto} bind def
+/s {show} bind def
+
+/Box {	% x y w h -> -			define box path
+  /d_h exch def /d_w exch def /d_y exch def /d_x exch def
+  d_x d_y  moveto
+  d_w 0 rlineto
+  0 d_h rlineto
+  d_w neg 0 rlineto
+  closepath
+} def
+
+/bgs {	% x y height blskip gray str -> -	show string with bg color
+  /str exch def
+  /gray exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    gray setgray
+    fill
+  grestore
+  x y M str s
+} def
+
+/bgcs { % x y height blskip red green blue str -> -  show string with bg color
+  /str exch def
+  /blue exch def
+  /green exch def
+  /red exch def
+  /blskip exch def
+  /height exch def
+  /y exch def
+  /x exch def
+
+  gsave
+    x y blskip sub str stringwidth pop height Box
+    red green blue setrgbcolor
+    fill
+  grestore
+  x y M str s
+} def
+
+% Highlight bars.
+/highlight_bars {	% nlines lineheight output_y_margin gray -> -
+  gsave
+    setgray
+    /ymarg exch def
+    /lineheight exch def
+    /nlines exch def
+
+    % This 2 is just a magic number to sync highlight lines to text.
+    0 d_header_y ymarg sub 2 sub translate
+
+    /cw d_output_w cols div def
+    /nrows d_output_h ymarg 2 mul sub lineheight div cvi def
+
+    % for each column
+    0 1 cols 1 sub {
+      cw mul /xp exch def
+
+      % for each rows
+      0 1 nrows 1 sub {
+        /rn exch def
+        rn lineheight mul neg /yp exch def
+        rn nlines idiv 2 mod 0 eq {
+	  % Draw highlight bar.  4 is just a magic indentation.
+	  xp 4 add yp cw 8 sub lineheight neg Box fill
+	} if
+      } for
+    } for
+
+  grestore
+} def
+
+% Line highlight bar.
+/line_highlight {	% x y width height gray -> -
+  gsave
+    /gray exch def
+    Box gray setgray fill
+  grestore
+} def
+
+% Column separator lines.
+/column_lines {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h translate
+    /cw d_output_w cols div def
+    1 1 cols 1 sub {
+      cw mul 0 moveto
+      0 d_output_h rlineto stroke
+    } for
+  grestore
+} def
+
+% Column borders.
+/column_borders {
+  gsave
+    .1 setlinewidth
+    0 d_footer_h moveto
+    0 d_output_h rlineto
+    d_output_w 0 rlineto
+    0 d_output_h neg rlineto
+    closepath stroke
+  grestore
+} def
+
+% Do the actual underlay drawing
+/draw_underlay {
+  ul_style 0 eq {
+    ul_str true charpath stroke
+  } {
+    ul_str show
+  } ifelse
+} def
+
+% Underlay
+/underlay {	% - -> -
+  gsave
+    0 d_page_h translate
+    d_page_h neg d_page_w atan rotate
+
+    ul_gray setgray
+    ul_font setfont
+    /dw d_page_h dup mul d_page_w dup mul add sqrt def
+    ul_str stringwidth pop dw exch sub 2 div ul_h_ptsize -2 div moveto
+    draw_underlay
+  grestore
+} def
+
+/user_underlay {	% - -> -
+  gsave
+    ul_x ul_y translate
+    ul_angle rotate
+    ul_gray setgray
+    ul_font setfont
+    0 0 ul_h_ptsize 2 div sub moveto
+    draw_underlay
+  grestore
+} def
+
+% Page prefeed
+/page_prefeed {		% bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} def
+
+% Wrapped line markers
+/wrapped_line_mark {	% x y charwith charheight type -> -
+  /type exch def
+  /h exch def
+  /w exch def
+  /y exch def
+  /x exch def
+
+  type 2 eq {
+    % Black boxes (like TeX does)
+    gsave
+      0 setlinewidth
+      x w 4 div add y M
+      0 h rlineto w 2 div 0 rlineto 0 h neg rlineto
+      closepath fill
+    grestore
+  } {
+    type 3 eq {
+      % Small arrows
+      gsave
+        .2 setlinewidth
+        x w 2 div add y h 2 div add M
+        w 4 div 0 rlineto
+        x w 4 div add y lineto stroke
+
+        x w 4 div add w 8 div add y h 4 div add M
+        x w 4 div add y lineto
+	w 4 div h 8 div rlineto stroke
+      grestore
+    } {
+      % do nothing
+    } ifelse
+  } ifelse
+} def
+
+% EPSF import.
+
+/BeginEPSF {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack
+  userdict begin
+  /showpage { } def
+  0 setgray 0 setlinecap
+  1 setlinewidth 0 setlinejoin
+  10 setmiterlimit [ ] 0 setdash newpath
+  /languagelevel where {
+    pop languagelevel
+    1 ne {
+      false setstrokeadjust false setoverprint
+    } if
+  } if
+} bind def
+
+/EndEPSF {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+%%EndResource
+%%BeginResource: procset Enscript-Encoding-88591 1.6 4
+/encoding_vector [
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclam       	/quotedbl     	/numbersign   	
+/dollar       	/percent      	/ampersand    	/quoteright   	
+/parenleft    	/parenright   	/asterisk     	/plus         	
+/comma        	/hyphen       	/period       	/slash        	
+/zero         	/one          	/two          	/three        	
+/four         	/five         	/six          	/seven        	
+/eight        	/nine         	/colon        	/semicolon    	
+/less         	/equal        	/greater      	/question     	
+/at           	/A            	/B            	/C            	
+/D            	/E            	/F            	/G            	
+/H            	/I            	/J            	/K            	
+/L            	/M            	/N            	/O            	
+/P            	/Q            	/R            	/S            	
+/T            	/U            	/V            	/W            	
+/X            	/Y            	/Z            	/bracketleft  	
+/backslash    	/bracketright 	/asciicircum  	/underscore   	
+/quoteleft    	/a            	/b            	/c            	
+/d            	/e            	/f            	/g            	
+/h            	/i            	/j            	/k            	
+/l            	/m            	/n            	/o            	
+/p            	/q            	/r            	/s            	
+/t            	/u            	/v            	/w            	
+/x            	/y            	/z            	/braceleft    	
+/bar          	/braceright   	/tilde        	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/.notdef      	/.notdef      	/.notdef      	/.notdef      	
+/space        	/exclamdown   	/cent         	/sterling     	
+/currency     	/yen          	/brokenbar    	/section      	
+/dieresis     	/copyright    	/ordfeminine  	/guillemotleft	
+/logicalnot   	/hyphen       	/registered   	/macron       	
+/degree       	/plusminus    	/twosuperior  	/threesuperior	
+/acute        	/mu           	/paragraph    	/bullet       	
+/cedilla      	/onesuperior  	/ordmasculine 	/guillemotright	
+/onequarter   	/onehalf      	/threequarters	/questiondown 	
+/Agrave       	/Aacute       	/Acircumflex  	/Atilde       	
+/Adieresis    	/Aring        	/AE           	/Ccedilla     	
+/Egrave       	/Eacute       	/Ecircumflex  	/Edieresis    	
+/Igrave       	/Iacute       	/Icircumflex  	/Idieresis    	
+/Eth          	/Ntilde       	/Ograve       	/Oacute       	
+/Ocircumflex  	/Otilde       	/Odieresis    	/multiply     	
+/Oslash       	/Ugrave       	/Uacute       	/Ucircumflex  	
+/Udieresis    	/Yacute       	/Thorn        	/germandbls   	
+/agrave       	/aacute       	/acircumflex  	/atilde       	
+/adieresis    	/aring        	/ae           	/ccedilla     	
+/egrave       	/eacute       	/ecircumflex  	/edieresis    	
+/igrave       	/iacute       	/icircumflex  	/idieresis    	
+/eth          	/ntilde       	/ograve       	/oacute       	
+/ocircumflex  	/otilde       	/odieresis    	/divide       	
+/oslash       	/ugrave       	/uacute       	/ucircumflex  	
+/udieresis    	/yacute       	/thorn        	/ydieresis    	
+] def
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Courier
+/HFpt_w 10 def
+/HFpt_h 10 def
+/Courier-Bold /HF-gs-font MF
+/HF /HF-gs-font findfont [HFpt_w 0 0 HFpt_h 0 0] makefont def
+/Courier /F-gs-font MF
+/F-gs-font 7 7 SF
+/#copies 1 def
+% Pagedevice definitions:
+gs_languagelevel 1 gt {
+  <<
+    /PageSize [612 792] 
+  >> setpagedevice
+} if
+%%BeginResource: procset Enscript-Header-enscript 1.6 4
+%%IncludeResource: font Times-Bold
+%%IncludeResource: font Times-Roman
+
+% Fonts.
+/Times-Bold /HeaderFont-Bold MF
+/HeaderDateF /HeaderFont-Bold findfont 12 scalefont def
+
+/Times-Roman /HeaderFont-Times MF
+/HeaderHDRF /HeaderFont-Times findfont 14 scalefont def
+
+/HeaderPageNumF /Helvetica-Bold findfont 28.8 scalefont def
+
+/do_header {	% print enscript header
+  gsave
+    d_header_x d_header_y translate
+
+    % light bar
+    0 0 d_header_w d_header_h 2 div Box
+    .95 setgray fill
+
+    % dark gray boxes
+    /dbw d_header_h 2 mul def	% dark box width
+    /dbc .7 def			% dark box color
+
+    % left dark box.
+    0 0 dbw d_header_h Box
+    dbc setgray fill
+
+    0 setgray 
+    HeaderDateF setfont
+    moddatestr dup stringwidth pop dbw exch sub 2 div 
+    d_header_h 2 div 2 add moveto show
+    modtimestr dup stringwidth pop dbw exch sub 2 div 
+    d_header_h 5 div moveto show
+
+    % right dark box
+    d_header_w dbw sub 0 dbw d_header_h Box
+    dbc setgray fill
+
+    HeaderPageNumF setfont
+    1 setgray
+    pagenumstr dup
+    stringwidth pop dbw exch sub 2 div d_header_w dbw sub add
+    d_header_h .2 mul moveto show
+
+    % filename
+    0 setgray 
+    HeaderHDRF setfont
+    d_header_w fname stringwidth pop sub 2 div d_header_h 8 div moveto
+    fname show
+
+    % user supplied header string.
+    user_header_p {
+      /h d_header_h 8 div 5 mul def
+
+      % Implement strict enscript compatibility.
+      user_header_center_str () eq user_header_right_str () eq and {
+        d_header_w user_header_left_str stringwidth pop sub 2 div 
+        h moveto user_header_left_str show
+      } {
+        dbw 5 add h moveto user_header_left_str show
+
+        d_header_w user_header_center_str stringwidth pop sub 2 div 
+        h moveto user_header_center_str show
+
+	d_header_w dbw sub 5 sub user_header_right_str stringwidth pop
+	sub h moveto user_header_right_str show
+      } ifelse
+    } if
+
+  grestore
+} def
+%%EndResource
+/d_page_w 744 def
+/d_page_h 536 def
+/d_header_x 0 def
+/d_header_y 500 def
+/d_header_w 744 def
+/d_header_h 36 def
+/d_footer_x 0 def
+/d_footer_y 0 def
+/d_footer_w 744 def
+/d_footer_h 0 def
+/d_output_w 744 def
+/d_output_h 500 def
+/cols 2 def
+%%EndSetup
+%%Page: (1) 1
+%%BeginPageSetup
+_S
+90 rotate
+24 -574 translate
+/pagenum 1 def
+/fname (./PL/hw6/no3/no3.cpp) def
+/fdir (./PL/hw6/no3/) def
+/ftail (no3.cpp) def
+% User defined strings:
+/pagenumstr (1) def
+/moddatestr (04/20/14) def
+/modtimestr (23:14:10) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+column_lines
+do_header
+5 490 M
+(#include <iostream>) s
+5 482 M
+(#include <stdio.h>) s
+5 474 M
+(#include <stdlib.h>) s
+5 466 M
+(#include <string.h>) s
+5 458 M
+(#include <memory.h>) s
+5 450 M
+(#include <fstream>) s
+5 434 M
+(#define MAX 1024) s
+5 418 M
+(using namespace std;) s
+5 402 M
+(class Replace) s
+5 394 M
+({) s
+5 378 M
+(  public:) s
+5 370 M
+(    char *result, *str, *s, *olds, *news;             // vairable declare) s
+5 362 M
+(    int i, count, oldlen, newlen;) s
+5 354 M
+(    char* putString\(\);                          ) s
+5 346 M
+(    void getString\(char *s, char *olds, char *news\);  // funtion declare) s
+5 338 M
+(  ) s
+5 330 M
+(};) s
+5 314 M
+(void  Replace::getString\(char *s, char *olds, char*news\)) s
+5 306 M
+({                                                     // mem-funtion intiialization) s
+5 298 M
+(  this->s = s;) s
+5 290 M
+(  this->olds = olds;) s
+5 282 M
+(  this->news = news;) s
+5 274 M
+(  count =0;) s
+5 266 M
+(  oldlen = strlen\(olds\);) s
+5 258 M
+(  newlen = strlen\(news\);) s
+5 242 M
+(}) s
+5 226 M
+(char* Replace::putString\(\)) s
+5 218 M
+({) s
+5 210 M
+(  if \(oldlen < 1\) return s;                           //if olds not be return stirng ) s
+5 194 M
+(  if \(newlen != oldlen\) {                             //if olds and news not equal ) s
+5 186 M
+(    for \(i = 0; s[i] != '\\0';\) {                  ) s
+5 178 M
+(      if \(memcmp\(&s[i], olds, oldlen\) == 0\){          //if find old word) s
+5 170 M
+(          count++;                                    //number of string  counter +1) s
+5 162 M
+(          i += oldlen;) s
+5 154 M
+(      }) s
+5 146 M
+(      else i++;) s
+5 138 M
+(    }) s
+5 130 M
+(  } else i = strlen\(s\);                               //if olds and news equal ) s
+5 122 M
+(                                                      //string dynamic allocation) s
+5 114 M
+(  result = new char[i + 1 + count * \(newlen - oldlen\)]; ) s
+5 106 M
+(  if \(result == NULL\) return NULL;                             ) s
+5 90 M
+(  str = result;                                       //str pointer result stirng) s
+5 74 M
+(  while \(*s\) {                                        //until input stirng find EOF) s
+5 66 M
+(    if \(memcmp\(s, olds, oldlen\) == 0\) {               //find old word in stirng then) s
+5 58 M
+(      memcpy\(str, news, newlen\);                      //copy new word to stirng) s
+5 50 M
+(      str += newlen;                                  //stirng length increase) s
+5 42 M
+(      s  += oldlen;) s
+5 34 M
+(    } else *str++ = *s++;) s
+5 26 M
+(  }) s
+5 18 M
+(  *str = '\\0';                                        //end input '\\0') s
+5 2 M
+(  return result;) s
+377 490 M
+(}) s
+377 474 M
+(int main\(int argc, char* argv\){) s
+377 458 M
+(  FILE *fp_r = NULL;                                  //file pointer initialization) s
+377 450 M
+(  FILE *fp_w = NULL;) s
+377 442 M
+(  FILE *fp_p = NULL;) s
+377 426 M
+(  Replace rep;) s
+377 418 M
+(  ) s
+377 410 M
+(  char data_Buffer[MAX];                              //buffer declaration) s
+377 402 M
+(  char replace_Buffer[MAX];) s
+377 394 M
+(  ) s
+377 386 M
+(  char string[MAX];                                   //stirng declaration) s
+377 378 M
+(  char *pt_d,*pt_r, *str, *s, *sp;                    //character pointer) s
+377 362 M
+(  char f_str[MAX],r_str[MAX];) s
+377 354 M
+(  char in_file[MAX], out_file[MAX], re_file[MAX];) s
+377 346 M
+( ) s
+377 338 M
+(  cout << "input file : ";                            //input in file name) s
+377 330 M
+(  cin >> in_file;) s
+377 322 M
+(  cout <<"replace file : ";                           //input replace file name) s
+377 314 M
+(  cin >> re_file;) s
+377 306 M
+(  cout <<"output file : ";                            //input outfile name) s
+377 298 M
+(  cin >> out_file;) s
+377 290 M
+(  ) s
+377 282 M
+(  fp_r = fopen\(in_file, "r"\);                         //file open) s
+377 274 M
+(  fp_w = fopen\(out_file, "w"\);) s
+377 258 M
+(  ) s
+377 250 M
+(  if\( fp_r == NULL\) return 0;) s
+377 234 M
+(  pt_d = data_Buffer;                                 //pointer allocation) s
+377 226 M
+(  pt_r = replace_Buffer;) s
+377 218 M
+(  sp =string;) s
+377 202 M
+(  while\(fgets\(pt_d, sizeof\(data_Buffer\), fp_r\)\){      //read in file) s
+377 186 M
+(    fp_p = fopen\(re_file, "r"\);) s
+377 178 M
+(    if\(fp_p == NULL\) return 0;) s
+377 170 M
+(  ) s
+377 162 M
+(    strcpy\(string, pt_d\);) s
+377 154 M
+(    cout << endl <<"in stirng : ";) s
+377 146 M
+(    ) s
+377 138 M
+(    while\(fgets\(pt_r, sizeof\(replace_Buffer\),fp_p\)\){  //read replace file) s
+377 130 M
+(   ) s
+377 122 M
+(      str = strtok\(pt_r , ","\);                       //token old word) s
+377 114 M
+(      strcpy\(f_str, str\);         ) s
+377 106 M
+(      while\(str = strtok\(NULL, "\\n"\)\){                //token new word) s
+377 98 M
+(          strcpy\(r_str, str\);) s
+377 90 M
+(       }) s
+377 82 M
+(    ) s
+377 74 M
+(      cout << "find : |" << f_str;) s
+377 66 M
+(      cout << "replace : => " << r_str;) s
+377 58 M
+(    ) s
+377 50 M
+(      rep.getString\(string, f_str, r_str\);) s
+377 42 M
+(      s = rep.putString\(\);) s
+377 34 M
+(      cout <<"out string : " << s ;) s
+377 26 M
+(      strcpy\(sp ,s\);) s
+377 10 M
+(      }) s
+_R
+S
+%%Page: (2) 2
+%%BeginPageSetup
+_S
+90 rotate
+24 -574 translate
+/pagenum 2 def
+/fname (./PL/hw6/no3/no3.cpp) def
+/fdir (./PL/hw6/no3/) def
+/ftail (no3.cpp) def
+% User defined strings:
+/pagenumstr (2) def
+/moddatestr (04/20/14) def
+/modtimestr (23:14:10) def
+/user_header_p false def
+/user_footer_p false def
+%%EndPageSetup
+column_lines
+do_header
+5 490 M
+(    fputs\(sp, fp_w\);                                 //output file) s
+5 482 M
+(    fclose\(fp_p\);                                    //file close) s
+5 466 M
+(  }) s
+5 450 M
+(  fclose\(fp_w\);) s
+5 442 M
+(  fclose\(fp_r\);) s
+5 426 M
+(  return 0;) s
+5 418 M
+(}) s
+_R
+S
+%%Trailer
+%%Pages: 2
+%%DocumentNeededResources: font Times-Roman Courier-Bold Courier 
+%%+ font Times-Bold 
+%%EOF

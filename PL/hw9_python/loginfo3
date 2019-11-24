@@ -1,0 +1,57 @@
+#!/usr/bin/python
+# -*- coding:utf-8 -*-
+
+#작성자 한석현
+
+import sys
+import os
+import commands
+import operator
+
+user_id = ''
+user_name = ''
+user_group = ''
+tmp ={}
+tmp2 ={}
+
+def no_args():
+	f = os.popen("last")
+	print "^[[7;37m N0.     USER_ID    "+"   NAME\t\tUSER_GRUOP\t\tCONNECTED_IP\t\t DATE  "+"^[[0m"
+	for lineStr in f.readlines():
+		tmp = lineStr.split()
+		if tmp !=[] :
+			print tmp
+def args():
+	f = os.popen("finger "+user_id)
+	for lineStr in f.readlines():
+		tmp = lineStr.split()
+		if tmp[1] == user_id:
+			user_name = tmp[3]
+		if "Directory:" in tmp:
+			user_group = tmp[1] 
+			print user_group
+			
+	f.close()
+		
+	f.close()
+	f2 = os.popen("last "+user_id)
+	for lineStr in f2.readlines():
+		tmp2 = lineStr.split()
+		if tmp2 !=[] :
+			if "logged" in tmp2 :
+				print user_name, "\t", tmp2[0], '\t', user_group, '\t', tmp2[2], '\t', tmp2[3], ' ', 
+				print tmp2[4], ' ', tmp2[5], '\t', tmp2[6], ' ', tmp2[7], ' ', tmp2[8], '\t', tmp2[9]
+			elif "wtmp" in tmp2 :
+				print 'end'
+			else:
+				print user_name, "\t", tmp2[0], '\t', user_group, '\t', tmp2[2], '\t', tmp2[3],' ',
+				print tmp2[4], ' ', tmp2[5], '\t', tmp2[6], ' ', tmp2[7], ' ', tmp2[8], '\t', tmp2[9]
+
+	f2.close()
+
+if __name__ == '__main__':
+	if len(sys.argv) == 1: 
+		no_args()
+        else:
+		user_id = sys.argv[1]
+		args()

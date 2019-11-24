@@ -1,0 +1,17 @@
+#!/bin/csh
+
+set values = (4 2 7 9 6 5 8 3)
+echo $values
+
+@ i = 1
+
+
+set max = $values[1]
+@ i = 2
+foreach x ($values[$i-])
+	echo $x
+	if ( $x > $max) then
+		set max = $x
+	endif
+end
+echo $max

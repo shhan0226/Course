@@ -1,0 +1,24 @@
+FileStream fileIn: 'hw.st'
+
+pt n:= Point2 new.
+pt x : 5.
+pt y : 4.
+
+pt2 := Point2 new.
+pt2 x: 3.
+pt2 y: 4.
+
+pt x printNl.
+pt y printNl.
+pt rho printNl.
+pt2 x printNl.
+pt2 y printNl.
+pt2 rho printNl.
+
+(pt equal: pt2) printNl.
+
+tr := Triple2 new.
+tr x: 33.
+tr y: 34.
+tr z: 35.
+

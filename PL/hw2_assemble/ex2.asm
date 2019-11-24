@@ -1,0 +1,5 @@
+	ORG 0
+START:	LD A, 2
+	LD B, 1
+	SUB B
+	END

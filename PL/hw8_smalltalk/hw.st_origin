@@ -1,0 +1,31 @@
+Object subclass: Point2 [
+   | xCoordinate yCoordinate |
+
+   Point2 [
+      xCoordinate := nil.
+      yCoordinate := nil.
+   ]
+
+   x: xValue [
+      (xValue isNumber)
+      ifTrue: [ xCoordinate := xValue. ]
+      ifFalse: [ Transcript show: 'not a number'; cr. ]
+   ]
+
+   x [
+       ^xCoordinate
+   ]
+
+   ...
+
+]
+
+Point2 subclass: Triple2 [
+   | zCoordinate |
+
+   Triple2 [
+      super new.
+      zCoordinate := nil.
+   ]
+   ....
+]

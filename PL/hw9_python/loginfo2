@@ -1,0 +1,72 @@
+#!/usr/bin/python
+# -*- coding:utf-8 -*-
+
+#작성자 한석현
+
+import sys
+import os
+import commands
+import operator
+
+user_name = ''
+user_group = ''
+
+def finger(user_id):
+	global user_name 
+	global user_group
+	f = os.popen("finger "+user_id)
+	for lineStr in f.readlines():
+		tmp = lineStr.split()
+		if tmp[1] == user_id:
+			user_name = tmp[3]
+		if "Directory:" in tmp:
+			user_group = tmp[1] 
+	f.close()
+
+def no_args():
+	global user_name
+	global user_group
+	f = os.popen("last")
+	print  "NAME\t"+"ID\t"+"CONNECTED_GROUP\t\t"+"USER_IP\t\t"+"DATE\t"
+	for lineStr in f.readlines():
+		tmp = lineStr.split()
+		if tmp !=[] :
+			if "logged" in tmp :
+				finger(tmp[0])
+				print user_name, " ", tmp[0], '\t', user_group, '\t', tmp[2], '\t', tmp[3], ' ', 
+				print tmp[4], ' ', tmp[5], '\t', tmp[6], ' ', tmp[7], ' ', tmp[8], '\t', tmp[9]
+			elif "wtmp" in tmp :
+				print 'end'
+			else:
+				finger(tmp[0])
+				print user_name, " ", tmp[0], '\t', user_group, '\t', tmp[2], '\t', tmp[3],' ',
+				print tmp[4], ' ', tmp[5], '\t', tmp[6], ' ', tmp[7], ' ', tmp[8], '\t', tmp[9]
+	f.close()
+
+def args():
+
+	user_id = sys.argv[1]
+	global user_name
+	global user_group
+	print  "NAME\t"+"ID\t"+"CONNECTED_GROUP\t\t"+"USER_IP\t\t"+"DATE\t"
+	finger(user_id)
+	f2 = os.popen("last "+user_id)
+	for lineStr in f2.readlines():
+		tmp2 = lineStr.split()
+		if tmp2 !=[] :
+			if "logged" in tmp2 :
+				print user_name, "\t", tmp2[0], '\t', user_group, '\t', tmp2[2], '\t', tmp2[3], ' ', 
+				print tmp2[4], ' ', tmp2[5], '\t', tmp2[6], ' ', tmp2[7], ' ', tmp2[8], '\t', tmp2[9]
+			elif "wtmp" in tmp2 :
+				print 'end'
+			else:
+				print user_name, "\t", tmp2[0], '\t', user_group, '\t', tmp2[2], '\t', tmp2[3],' ',
+				print tmp2[4], ' ', tmp2[5], '\t', tmp2[6], ' ', tmp2[7], ' ', tmp2[8], '\t', tmp2[9]
+
+	f2.close()
+
+if __name__ == '__main__':
+	if len(sys.argv) == 1: 
+		no_args()
+        else:
+		args()

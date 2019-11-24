@@ -1,0 +1,40 @@
+#!/bin/csh
+
+set values = (4 2 7 9 6 5 8 3)
+echo $values
+
+#set values[1] = $values[2]
+#echo $values
+
+
+@ i = 1
+@ j = 1
+
+while ($i < $#values)
+	@ j = $i
+	while($j < $#values)
+		@ k = $j + 1
+		if($values[$i] > $values[$k]) then
+			set tmp = $values[$i] # when input the int, set is $
+			set values[$i] = $values[$k] 
+			set values[$k] = $tmp
+		endif
+			@ j ++
+	end
+	@ i ++
+end
+	echo $values
+
+
+@ i = 1
+@ j = $#values
+
+foreach x ($values[$i-])
+	set tmp2 = $x
+	set x = $values[$j] #call- by-refercne
+	set values[$j] = $tmp2
+	endif
+	@ j --
+end
+
+	echo $values

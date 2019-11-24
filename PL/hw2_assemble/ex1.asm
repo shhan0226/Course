@@ -1,0 +1,5 @@
+	ORG 0
+START:	LD A, 23H
+	LD B, 12H
+	ADD A, B
+	END

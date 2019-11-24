@@ -1,0 +1,68 @@
+FileStream fileIn: 'hw.st'
+
+pt := Point2 new.
+pt x: a.
+pt x: 3.
+pt y: b.
+pt y: 4.
+
+pt2 := Point2 new.
+pt2 x: 5.
+pt2 y: 6.
+
+pt3 := Point2 new.
+pt3 x: 3.
+pt3 y: 4.
+
+pt x printNl.
+pt y printNl.
+pt reflect printNl.
+pt rotate printNl.
+pt rho printNl.
+
+(pt equal: pt2) printNl.
+(pt equal: pt3) printNl.
+
+tr := Triple2 new.
+tr x: 33.
+tr y: 34.
+tr z: 35.
+tr x printNl.
+tr y printNl.
+tr z printNl.
+tr phi printNl.
+
+re := Retangle2 new.
+pt x: 1.
+pt y: 4.
+re upperLeft: pt .
+
+pt2 x: -4.
+pt2 y: 1.
+re lowRight: pt2.
+
+pt2 x: 4.
+pt2 y: 1.
+re lowRight: pt2.
+
+re area.
+
+re2 := Retangle2 new.
+pt x: 2.
+pt y: 4.
+re2 upperLeft: pt .
+pt2 x: 4.
+pt2 y: 2.
+re lowRight: pt2.
+
+(re equal: re2) printNl.
+
+re3 := Retangle2 new.
+pt x: 1.
+pt y: 4.
+re3 upperLeft: pt .
+pt2 x: 4.
+pt2 y: 1.
+re lowRight: pt2.
+
+(re equal: re3) printNl.

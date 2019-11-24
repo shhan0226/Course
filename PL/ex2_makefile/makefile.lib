@@ -1,0 +1,16 @@
+foo: foo.o lprt.o
+	cc -o foo foo.o -lprt -L.
+
+lprt.o: prt.c
+	cc -c prt.c
+	ar -cr libprt.a prt.o
+
+foo.o: foo.c
+	cc -c foo.c
+
+clean:
+	rm *.o
+
+run:
+	foo
+	echo $?
