@@ -1,0 +1,6 @@
+#!/bin/bash
+
+cc -c ex1.c
+cc -c print.c
+ar -cr libprint.a print.o
+cc -o ex1 ex1.o -lprint -L.
