@@ -1,0 +1,490 @@
+/* types of identifiers */
+%token TK_IDENTIFIER
+
+/* types of constants */
+%token TK_NUM
+
+/* keywords */
+%token TK_INT
+%token TK_STRUCT
+
+%{
+#include <stdio.h>
+#include <ctype.h>
+
+#include "sym.h"
+
+extern struct sym *symcreate();
+extern remove2();
+
+static char errmsg[512];
+
+#define STRUCT_NESTING  16  /* how many levels of structure nesting are
+                             * supported?
+                             */
+
+/* what is the base type at each of the active structure levels? */
+static struct typestruct *basetype[STRUCT_NESTING];
+static int str_nesting = 0; /* how many nested structure levels? */
+
+static char *id_name;          /* points to id being defined */
+
+struct sym *install_id();
+extern struct typestruct *append_type();
+extern struct sym *lookup();
+void symprint();
+%}
+
+/* This declares the attribute stack entry */
+%union {
+   int                    i;
+   char                  *s;
+   struct typestruct     *t;
+}
+
+%type <i> TK_NUM
+
+%start function    /* start symbol is function */
+%%
+function
+                : declarations exprs
+                ;
+
+declarations
+                : declaration
+                | declarations declaration
+                ;
+declaration
+                : type_specifier declarator_list ';'
+                ;
+
+type_specifier
+                : TK_INT
+                  {
+/* FILL IN THIS BLANK
+- tinstall(inttype)
+                     $<t>$ = ...
+*/
+                     $<t>$ = tinstall(inttype, 1, NILTYPE);
+                     basetype[str_nesting] = $<t>$;
+                  }
+                | struct_specifier
+                  {
+                     $<t>$ = $<t>1;
+                  }
+                ;
+
+/* struct_specifier should also accept struct '{' ... '}'
+ * Returns a pointer to a type structure
+ */
+struct_specifier
+                : struct_def struct_declaration_list '}'
+                  {
+                     str_nesting--;
+                     $<t>$ = $<t>1;
+                     $<t>$->t_size = $<i>2;
+                  }
+                | struct TK_IDENTIFIER
+                  {
+                     register struct sym *vp;
+
+                     if (vp = struct_lookup($<s>2))
+                        $<t>$ = vp->v_type;
+                     else {
+/* FILL IN THIS BLANK
+- tinstall(strtype)
+- struct_install(symcreate())
+- tt.t_first : t_first struct name variable temporarily
+               later points to variable representing first field (struct_field)
+                        $<t>$ = ...
+                        $<t>$->tt.t_first = ...
+*/
+                        $<t>$ = tinstall(strtype, 0, NILTYPE);
+                        $<t>$->tt.t_first = struct_install( symcreate($<s>2 ,$<t>1->t_cat, $<t>$ ) );
+                     }
+                  }
+                ;
+
+/* Returns a pointer to a type structure */
+struct_def
+                : struct TK_IDENTIFIER '{'
+                  {
+                     register struct sym *vp;  
+ 
+                     if (vp = struct_lookup($<s>2)) {
+                     /* if the current declarations is in the same scope
+                      * as the existing declaration and the exiting
+                      * declaration alreasy defined all of the fields,
+                      * the gripe.
+                      */
+                        if (vp->v_type->t_size != 0) {
+                           sprintf(errmsg, "redeclaration of %s", $<s>2);
+                           yyerror(errmsg);
+                           $<t>$ = tinstall(strtype, 0, NILTYPE);
+                           $<t>$->t_size = 0;
+                        }
+                        else
+                           $<t>$ = vp->v_type;
+                     }
+                     else {    /* name not in structure table */
+/* FILL IN THIS BLANK
+- tinstall(strtype)
+- struct_install(symcreate())
+- tt.t_first : t_first struct name variable temporarily
+               later points to variable representing first field (struct_field)
+		        $<t>$ = ...
+                        $<t>$->t_size = ...
+                        $<t>$->tt.t_first = ... 
+*/
+		        $<t>$ = tinstall(strtype, 0, NILTYPE);
+                        $<t>$->t_size = 0;
+                        $<t>$->tt.t_first = NULL;
+                     }
+                     basetype[str_nesting++] = $<t>$;
+                  }
+                | struct '{'
+                  {
+/* FILL IN THIS BLANK
+- tinstall(strtype)
+- struct_install(symcreate())
+- tt.t_first : t_first struct name variable temporarily
+               later points to variable representing first field (struct_field)
+                     $<t>$ = ...
+                     $<t>$->t_size = ...
+                     $<t>$->tt.t_first = ...
+*/
+                     $<t>$ = tinstall(strtype, 0, NILTYPE);
+                     $<t>$->t_size = 0;
+                     $<t>$->tt.t_first = NULL;
+                     basetype[str_nesting++] = $<t>$;
+                  }
+                ;
+
+struct
+                : TK_STRUCT
+                ;
+
+/* Returns the size occupied by the parsed field names */
+struct_declaration_list
+		: struct_declaration
+                  { $<i>$ = $<i>1; }
+		| struct_declaration_list struct_declaration
+                  { $<i>$ = $<i>1 + $<i>2; }
+		;
+
+/* Returns the size occupied by the parsed field names */
+struct_declaration
+		: stype struct_declarator_list ';'
+                  { $<i>$ = $<i>2; }
+		;
+
+/* Sets basetype according to the type specification */
+stype
+		: type_specifier
+                  { basetype[str_nesting] = $<t>1; }
+		;
+
+/* Returns the size occupied by the parsed field names */
+struct_declarator_list
+		: struct_declarator
+		  {
+                     $<i>$ = struct_field(id_name,$<t>1, basetype[str_nesting]);
+                  }
+		| struct_declarator_list ',' struct_declarator
+		  {
+                     $<i>$ = $<i>1
+                          + struct_field(id_name, $<t>3, basetype[str_nesting]);
+                  }
+                ;
+
+/* Returns the partial type associated with particular identifier
+ * and sets id_name to point at this identifier name.
+ */
+struct_declarator
+		: stars struct_declarator2
+		  {
+                     if ($<i>1) {
+                        int i;
+                        struct typestruct *t = NILTYPE;
+                        for (i = 0; i < $<i>1; i++)
+/* FILL IN THIS BLANK
+- repeat tinstall(ptrtype)
+- append_type(old,new)
+                           t = ...
+                        $<t>2 = ...
+*/
+                           t = append_type( t, tinstall(ptrtype, 1, NILTYPE));
+                        $<t>2 = append_type($<t>2, t);
+                     }
+                     $<t>$ = $<t>2;
+                   }
+		;
+
+/* Returns the number of stars seen */
+stars
+		: '*' stars
+/* FILL IN THIS BLANK
+- increase loops
+                {$<i>$ = ...}
+*/
+                {$<i>$ = $<i>2+1;}
+		|
+/* FILL IN THIS BLANK
+- initialize loop
+                {$<i>$ = ...}
+*/
+                {$<i>$ = 0;}
+		;
+
+/* Returns the partial type associated with particular identifier
+ * and sets id_name to point at this identifier name.
+ */
+struct_declarator2
+		: TK_IDENTIFIER
+                  {
+/* FILL IN THIS BLANK
+- easy
+                     id_name = ...
+                     $<t>$ = ...
+*/
+                     id_name = $<s>1;
+                     $<t>$ = NILTYPE;
+                  }
+                | '(' struct_declarator ')'
+                  {
+                     $<t>$ = $<t>2;
+                  }
+		| struct_declarator2 '[' TK_NUM ']'
+	  	  { 
+                     if ($<i>3 <= 0) {
+                        yyerror("Negative dimension");
+                        $<i>3 = 1;
+                     }
+/* FILL IN THIS BLANK
+- tinstall(arrtype,-) see fix_size(csym.c)
+- append_type
+                     $<t>$ = ...
+*/
+                     $<t>$ = append_type($<t>1, tinstall(arrtype, -$<i>3, NILTYPE));
+		  }
+		;
+
+/* Install declared identifiers in the symbol table */
+declarator_list
+		: declarator
+		   {
+		      install_id(id_name, $<t>1, basetype[str_nesting]);
+                   }
+		| declarator_list ',' declarator
+		   { 
+		      install_id(id_name, $<t>3, basetype[str_nesting]);
+		   }
+		;
+
+/* Returns the partial type associated with particular identifier
+ * and sets id_name to point at this identifier name.
+ */
+declarator
+		: stars declarator2
+                  {
+                     if ($<i>1) {
+                        int i;
+                        struct typestruct *t = NILTYPE;
+
+                        for (i = 0; i < $<i>1; i++)
+/* FILL IN THIS BLANK
+- same as the above
+                           t = ...
+                        $<t>2 = ...
+*/
+                           t = append_type(t, tinstall(ptrtype, 1, NILTYPE) );
+                        $<t>2 = append_type($<t>2, t);
+                     }
+                     $<t>$ = $<t>2;
+                   }
+		;
+
+/* Returns the partial type associated with particular identifier
+ * and sets id_name to point at this identifier name.
+ */
+declarator2
+		: TK_IDENTIFIER
+		  {
+/* FILL IN THIS BLANK
+- same as the above
+	 	     id_name = ...
+		     $<t>$ = ...
+*/
+	 	     id_name = $<s>1;
+		     $<t>$ = NILTYPE;
+		  }
+                | '(' declarator ')'
+                  {
+                      $<t>$ = $<t>2;
+                  }
+		| declarator2 '[' ']'
+		  {
+/* FILL IN THIS BLANK
+- tinstall(ptrtype)
+- append_type
+		     $<t>$ = ...
+*/
+		     $<t>$ = append_type($<t>1, tinstall(ptrtype, 1, NILTYPE));
+		  }
+		| declarator2 '[' TK_NUM ']'
+		  {
+                     if ($<i>3 <= 0) {
+                       yyerror("Negative dimension");
+                       $<i>3 = 1;
+                     }
+/* FILL IN THIS BLANK
+- same as the above
+		     $<t>$ = ...
+*/
+		     $<t>$ = append_type($<t>1, tinstall(ptrtype, -$<i>3, NILTYPE));
+		  }
+		| declarator2 '(' ')'
+		  {
+/* FILL IN THIS BLANK
+- tinstall(funtype,-1)
+- append_type
+		     $<t>$ = ...
+*/
+		     $<t>$ = append_type($<t>1, tinstall(funtype, -1, NILTYPE));
+		  }
+		;
+
+exprs
+                : expr
+                | exprs expr
+                ;
+
+expr
+                : TK_IDENTIFIER ';'
+                  {
+                     register struct sym *sp = lookup($<s>1);
+
+                     if (sp) symprint(lookup($<s>1));
+                     else printf("%s: not declared\n", $<s>1);
+                  }
+                ;
+
+%%
+/* Install identifier in the symbol table with the type determined by
+ * catenating builttype and basetype.
+ */
+
+struct sym *install_id(name, builttype, basetype)
+    char *name;
+    struct typestruct *builttype, *basetype;
+{
+    extern struct sym *symcreate();
+    extern struct sym *vinstall();
+    register struct sym *vp, *s;
+
+    builttype = append_type(builttype, basetype);
+    if (builttype->t_cat == strtype && builttype->t_size == 0)
+       yyerror("unknown size");
+
+    else {
+       if (vp = lookup(name)) {
+          sprintf(errmsg, "redeclaration of %s", name);
+          yyerror(errmsg);
+       }
+       else {
+          if (builttype->t_cat == arrtype && builttype->t_size == 0) {
+             builttype->t_cat = ptrtype;
+             builttype->t_size = 1;
+          }
+          vp = vinstall(symcreate(name, lvar, builttype));
+       }
+    }
+    return vp;
+}
+
+/* Install a new field within a structure, making sure that this field
+ * name does not conflict with existing field names.  Return the size
+ * of the new field.
+ */
+struct_field(name, builttype, btype)
+    char *name;
+    struct typestruct *builttype, *btype;
+{
+    register struct sym *vp;
+    register struct typestruct *tp;
+
+    builttype = append_type(builttype, btype);
+    if (builttype->t_cat == strtype && builttype->t_size == 0)
+       yyerror("unknown size");
+
+    tp = basetype[str_nesting-1];
+
+    for (vp = tp->tt.t_first; vp; vp = vp->v_next)
+       if (vp->v_name == name) {
+          sprintf(errmsg, "redeclaration of %s", name);
+          yyerror(errmsg);
+          return 0;
+       }
+
+    if (builttype->t_cat == arrtype && builttype->t_size == 0) {
+       builttype->t_cat = ptrtype;
+       builttype->t_size = 1;
+    }
+
+    vp = symcreate(name, ivar, builttype);
+    vp->v_next = tp->tt.t_first;
+    if (tp->tt.t_first)
+       vp->v_position = 
+          tp->tt.t_first->v_position + tp->tt.t_first->v_type->t_size;
+    else
+       vp->v_position = 0;
+    tp->tt.t_first = vp;
+    return vp->v_type->t_size;
+}
+
+void symprint(sp)
+   register struct sym *sp;
+{
+   register struct typestruct *vp;
+
+   printf("%s: ", sp->v_name);
+   vp = sp->v_type;
+   while (vp) {
+      switch (vp->t_cat) {
+      case inttype:
+         printf("int");
+         break;
+      case strtype:
+         printf("str");
+         printf("(%d)\n",vp->t_size);
+         {
+            register struct sym *sp = vp->tt.t_first;
+            register i = 0;
+            while (i < vp->t_size) {
+               printf("   -> ");
+               symprint(sp);
+               i += sp->v_type->t_size;
+               sp = sp->v_next;
+            }
+         }
+         return;
+         break;
+      case arrtype:
+         printf("arr");
+         printf("(%d)",vp->t_size);
+         break;
+      case ptrtype:
+         printf("ptr");
+         break;
+      case funtype:
+         printf("fun");
+         break;
+      default:
+         printf("unknown type");
+         break;
+      }
+      vp = vp->tt.t_base;
+      if (vp) printf(" -> ");
+   }
+   printf("\n");
+}

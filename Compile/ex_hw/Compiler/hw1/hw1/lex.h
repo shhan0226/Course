@@ -1,0 +1,15 @@
+#define TK_ID           256
+#define TK_NUM          257
+#define TK_INT          258
+#define TK_FLOAT        259
+#define TK_IF           260
+#define TK_ELSE         261
+#define TK_EQ           262
+#define TK_LPAR         263
+#define TK_RPAR         264
+#define TK_LBRACE       265
+#define TK_RBRACE       266
+#define TK_COMMA        267
+#define TK_ASSIGN       268
+#define TK_SCOLON       269
+#define TK_EOF          270
