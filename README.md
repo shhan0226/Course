@@ -3,7 +3,7 @@
 ## Introduction
 학부와 대학원 과정에서 사용한 소스 정리
 
-## Master Course
+## Contents
 
 ### Compiler
 * 컴파일러 수업에서 사용한 소스 정리<br>
